@@ -421,7 +421,7 @@ pub struct XlsEncoding {
 impl XlsEncoding {
     pub fn from_codepage(codepage: u16) -> Result<XlsEncoding, CfbError> {
         let e =
-            codepage::to_encoding(codepage).ok_or_else(|| CfbError::CodePageNotFound(codepage))?;
+            codepage::to_encoding(codepage).ok_or(CfbError::CodePageNotFound(codepage))?;
         Ok(XlsEncoding { encoding: e })
     }
 

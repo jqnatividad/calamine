@@ -370,7 +370,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
     // sheets must be added before this is called!!
     fn read_table_metadata(&mut self) -> Result<(), XlsxError> {
         for (sheet_name, sheet_path) in &self.sheets {
-            let last_folder_index = sheet_path.rfind("/").expect("should be in a folder");
+            let last_folder_index = sheet_path.rfind('/').expect("should be in a folder");
             let (base_folder, file_name) = sheet_path.split_at(last_folder_index);
             let rel_path = format!("{}/_rels{}.rels", base_folder, file_name);
 
@@ -410,7 +410,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
                                 if target.starts_with("../") {
                                     // this is an incomplete implementation, but should be good enough for excel
                                     let new_index =
-                                        base_folder.rfind("/").expect("Must be a parent folder");
+                                        base_folder.rfind('/').expect("Must be a parent folder");
                                     let full_path = format!(
                                         "{}{}",
                                         base_folder[..new_index].to_owned(),
@@ -634,7 +634,7 @@ where
                         return Err(XlsxError::UnexpectedNode("dimension"));
                     }
                     b"sheetData" => {
-                        read_data(&strings, &formats, &mut xml, &mut cells)?;
+                        read_data(strings, formats, &mut xml, &mut cells)?;
                         break;
                     }
                     _ => (),
@@ -1001,7 +1001,7 @@ impl Dimensions {
 fn get_dimension(dimension: &[u8]) -> Result<Dimensions, XlsxError> {
     let parts: Vec<_> = dimension
         .split(|c| *c == b':')
-        .map(|s| get_row_column(s))
+        .map(get_row_column)
         .collect::<Result<Vec<_>, XlsxError>>()?;
 
     match parts.len() {
