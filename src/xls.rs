@@ -1018,7 +1018,8 @@ fn parse_formula(
                     args.push(fargs.len());
                     formula.push_str(
                         crate::utils::FTAB
-                            .get(iftab).ok_or(XlsError::IfTab(iftab))?,
+                            .get(iftab)
+                            .ok_or(XlsError::IfTab(iftab))?,
                     );
                     formula.push('(');
                     for w in args.windows(2) {
