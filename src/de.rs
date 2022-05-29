@@ -327,14 +327,12 @@ where
             ..
         } = *self;
 
-        if let Some(row) = rows.next() {
+        rows.next().map(|row| {
             current_pos.0 += 1;
             let headers = headers.as_ref().map(|h| &**h);
             let de = RowDeserializer::new(column_indexes, headers, row, current_pos);
-            Some(Deserialize::deserialize(de))
-        } else {
-            None
-        }
+            Deserialize::deserialize(de)
+        })
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
