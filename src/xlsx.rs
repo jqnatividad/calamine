@@ -475,12 +475,12 @@ impl<RS: Read + Seek> Xlsx<RS> {
                         }
                         Ok(Event::Start(ref e)) if e.local_name() == b"tableColumn" => {
                             for a in e.attributes() {
-                                match a? {
-                                    Attribute {
-                                        key: b"name",
-                                        value: v,
-                                    } => column_names.push(xml.decode(&v).into_owned()),
-                                    _ => (),
+                                if let Attribute {
+                                    key: b"name",
+                                    value: v,
+                                } = a?
+                                {
+                                    column_names.push(xml.decode(&v).into_owned())
                                 }
                             }
                         }
