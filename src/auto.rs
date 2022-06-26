@@ -24,7 +24,7 @@ pub enum Sheets {
 ///
 /// Whenever possible use the statically known `open_workbook` function instead
 pub fn open_workbook_auto<P: AsRef<Path>>(path: P) -> Result<Sheets, Error> {
-    Ok(match path.as_ref().extension().and_then(|e| e.to_str()) {
+    Ok(match path.as_ref().extension().and_then(std::ffi::OsStr::to_str) {
         Some("xls") | Some("xla") => Sheets::Xls(open_workbook(&path).map_err(Error::Xls)?),
         Some("xlsx") | Some("xlsm") | Some("xlam") => {
             Sheets::Xlsx(open_workbook(&path).map_err(Error::Xlsx)?)

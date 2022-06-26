@@ -232,7 +232,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
                         Ok(Event::Start(ref e)) if e.local_name() == b"xf" => {
                             self.formats.push(
                                 e.attributes()
-                                    .filter_map(|a| a.ok())
+                                    .filter_map(std::result::Result::ok)
                                     .find(|a| a.key == b"numFmtId")
                                     .map_or(CellFormat::Other, |a| {
                                         match number_formats.get(&*a.value) {
@@ -312,7 +312,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
                 Ok(Event::Start(ref e)) if e.local_name() == b"definedName" => {
                     if let Some(a) = e
                         .attributes()
-                        .filter_map(|a| a.ok())
+                        .filter_map(std::result::Result::ok)
                         .find(|a| a.key == b"name")
                     {
                         let name = a.unescape_and_decode_value(&xml)?;
@@ -480,7 +480,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
                                     value: v,
                                 } = a?
                                 {
-                                    column_names.push(xml.decode(&v).into_owned())
+                                    column_names.push(xml.decode(&v).into_owned());
                                 }
                             }
                         }
@@ -996,7 +996,7 @@ struct Dimensions {
 
 impl Dimensions {
     fn len(&self) -> u64 {
-        (self.end.0 - self.start.0 + 1) as u64 * (self.end.1 - self.start.1 + 1) as u64
+        u64::from(self.end.0 - self.start.0 + 1) * u64::from(self.end.1 - self.start.1 + 1)
     }
 }
 
@@ -1048,7 +1048,7 @@ fn get_row_column(range: &[u8]) -> Result<(u32, u32), XlsxError> {
         match *c {
             c @ b'0'..=b'9' => {
                 if readrow {
-                    row += ((c - b'0') as u32) * pow;
+                    row += (u32::from(c - b'0')) * pow;
                     pow *= 10;
                 } else {
                     return Err(XlsxError::NumericColumn(c));
@@ -1059,7 +1059,7 @@ fn get_row_column(range: &[u8]) -> Result<(u32, u32), XlsxError> {
                     pow = 1;
                     readrow = false;
                 }
-                col += ((c - b'A') as u32 + 1) * pow;
+                col += (u32::from(c - b'A') + 1) * pow;
                 pow *= 26;
             }
             c @ b'a'..=b'z' => {
@@ -1067,7 +1067,7 @@ fn get_row_column(range: &[u8]) -> Result<(u32, u32), XlsxError> {
                     pow = 1;
                     readrow = false;
                 }
-                col += ((c - b'a') as u32 + 1) * pow;
+                col += (u32::from(c - b'a') + 1) * pow;
                 pow *= 26;
             }
             _ => return Err(XlsxError::Alphanumeric(*c)),

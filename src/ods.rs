@@ -203,7 +203,7 @@ fn parse_content<RS: Read + Seek>(mut zip: ZipArchive<RS>) -> Result<Content, Od
             Ok(Event::Start(ref e)) if e.name() == b"table:table" => {
                 if let Some(ref a) = e
                     .attributes()
-                    .filter_map(|a| a.ok())
+                    .filter_map(std::result::Result::ok)
                     .find(|a| a.key == b"table:name")
                 {
                     let name = a
@@ -455,10 +455,10 @@ fn read_named_expressions(reader: &mut OdsReader<'_>) -> Result<Vec<(String, Str
                     let a = a.map_err(OdsError::Xml)?;
                     match a.key {
                         b"table:name" => {
-                            name = a.unescape_and_decode_value(reader).map_err(OdsError::Xml)?
+                            name = a.unescape_and_decode_value(reader).map_err(OdsError::Xml)?;
                         }
                         b"table:cell-range-address" | b"table:expression" => {
-                            formula = a.unescape_and_decode_value(reader).map_err(OdsError::Xml)?
+                            formula = a.unescape_and_decode_value(reader).map_err(OdsError::Xml)?;
                         }
                         _ => (),
                     }

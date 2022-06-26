@@ -337,7 +337,7 @@ impl<RS: Read + Seek> Xlsb<RS> {
                     let is_int = (buf[8] & 2) != 0;
                     buf[8] &= 0xFC;
                     if is_int {
-                        let v = (read_i32(&buf[8..12]) >> 2) as i64;
+                        let v = i64::from(read_i32(&buf[8..12]) >> 2);
                         if d100 {
                             DataType::Float((v as f64) / 100.0)
                         } else {
@@ -569,9 +569,9 @@ impl<'a> RecordIter<'a> {
     fn read_type(&mut self) -> Result<u16, std::io::Error> {
         let b = self.read_u8()?;
         let typ = if (b & 0x80) == 0x80 {
-            (b & 0x7F) as u16 + (((self.read_u8()? & 0x7F) as u16) << 7)
+            u16::from(b & 0x7F) + (u16::from(self.read_u8()? & 0x7F) << 7)
         } else {
-            b as u16
+            u16::from(b)
         };
         Ok(typ)
     }
@@ -666,7 +666,7 @@ fn parse_formula(
                 formula.push('!');
                 // TODO: check with relative columns
                 formula.push('$');
-                push_column(read_u16(&rgce[6..8]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[6..8])), &mut formula);
                 formula.push('$');
                 formula.push_str(&format!("{}", read_u32(&rgce[2..6]) + 1));
                 rgce = &rgce[8..];
@@ -888,7 +888,7 @@ fn parse_formula(
                 if rgce[5] & 0x80 != 0x80 {
                     formula.push('$');
                 }
-                push_column(col as u32, &mut formula);
+                push_column(u32::from(col), &mut formula);
                 if rgce[5] & 0x40 != 0x40 {
                     formula.push('$');
                 }
@@ -936,9 +936,9 @@ fn parse_formula(
         }
     }
 
-    if stack.len() != 1 {
-        Err(XlsbError::StackLen)
-    } else {
+    if stack.len() == 1 {
         Ok(formula)
+    } else {
+        Err(XlsbError::StackLen)
     }
 }

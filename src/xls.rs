@@ -244,7 +244,7 @@ impl<RS: Read + Seek> Xls<RS> {
                     // CodePage
                     0x0042 => {
                         if self.options.force_codepage.is_none() {
-                            encoding = XlsEncoding::from_codepage(read_u16(r.data))?
+                            encoding = XlsEncoding::from_codepage(read_u16(r.data))?;
                         }
                     }
                     0x013D => {
@@ -344,7 +344,7 @@ impl<RS: Read + Seek> Xls<RS> {
                                 row, col, e
                             )
                         });
-                        formulas.push(Cell::new((row as u32, col as u32), fmla));
+                        formulas.push(Cell::new((u32::from(row), u32::from(col)), fmla));
                     }
                     _ => (),
                 }
@@ -387,8 +387,8 @@ fn parse_number(r: &[u8]) -> Result<Cell<DataType>, XlsError> {
             found: r.len(),
         });
     }
-    let row = read_u16(r) as u32;
-    let col = read_u16(&r[2..]) as u32;
+    let row = u32::from(read_u16(r));
+    let col = u32::from(read_u16(&r[2..]));
     let v = read_f64(&r[6..]);
     Ok(Cell::new((row, col), DataType::Float(v)))
 }
@@ -428,7 +428,7 @@ fn parse_bool_err(r: &[u8]) -> Result<Cell<DataType>, XlsError> {
             });
         }
     };
-    Ok(Cell::new((row as u32, col as u32), v))
+    Ok(Cell::new((u32::from(row), u32::from(col)), v))
 }
 
 fn parse_rk(r: &[u8]) -> Result<Cell<DataType>, XlsError> {
@@ -441,7 +441,7 @@ fn parse_rk(r: &[u8]) -> Result<Cell<DataType>, XlsError> {
     }
     let row = read_u16(r);
     let col = read_u16(&r[2..]);
-    Ok(Cell::new((row as u32, col as u32), rk_num(&r[6..10])))
+    Ok(Cell::new((u32::from(row), u32::from(col)), rk_num(&r[6..10])))
 }
 
 fn parse_mul_rk(r: &[u8], cells: &mut Vec<Cell<DataType>>) -> Result<(), XlsError> {
@@ -465,11 +465,11 @@ fn parse_mul_rk(r: &[u8], cells: &mut Vec<Cell<DataType>>) -> Result<(), XlsErro
         });
     }
 
-    let mut col = col_first as u32;
+    let mut col = u32::from(col_first);
 
     for rk in r[4..r.len() - 2].chunks(6) {
         // ignore ixfe format on the 2 first bytes
-        cells.push(Cell::new((row as u32, col), rk_num(&rk[2..])));
+        cells.push(Cell::new((u32::from(row), col), rk_num(&rk[2..])));
         col += 1;
     }
     Ok(())
@@ -483,7 +483,7 @@ fn rk_num(rk: &[u8]) -> DataType {
     v[4..].copy_from_slice(rk);
     v[0] &= 0xFC;
     if is_int {
-        let v = (read_i32(&v[4..8]) >> 2) as i64;
+        let v = i64::from(read_i32(&v[4..8]) >> 2);
         if d100 && v % 100 != 0 {
             DataType::Float(v as f64 / 100.0)
         } else {
@@ -524,7 +524,7 @@ fn parse_label_sst(r: &[u8], strings: &[String]) -> Result<Cell<DataType>, XlsEr
     let col = read_u16(&r[2..]);
     let i = read_u32(&r[6..]) as usize;
     Ok(Cell::new(
-        (row as u32, col as u32),
+        (u32::from(row), u32::from(col)),
         DataType::String(strings[i].clone()),
     ))
 }
@@ -537,16 +537,16 @@ struct Dimensions {
 fn parse_dimensions(r: &[u8]) -> Result<Dimensions, XlsError> {
     let (rf, rl, cf, cl) = match r.len() {
         10 => (
-            read_u16(&r[0..2]) as u32,
-            read_u16(&r[2..4]) as u32,
-            read_u16(&r[4..6]) as u32,
-            read_u16(&r[6..8]) as u32,
+            u32::from(read_u16(&r[0..2])),
+            u32::from(read_u16(&r[2..4])),
+            u32::from(read_u16(&r[4..6])),
+            u32::from(read_u16(&r[6..8])),
         ),
         14 => (
             read_u32(&r[0..4]),
             read_u32(&r[4..8]),
-            read_u16(&r[8..10]) as u32,
-            read_u16(&r[10..12]) as u32,
+            u32::from(read_u16(&r[8..10])),
+            u32::from(read_u16(&r[10..12])),
         ),
         _ => {
             return Err(XlsError::Len {
@@ -767,9 +767,9 @@ fn parse_defined_names(rgce: &[u8]) -> Result<(Option<usize>, String), XlsError>
             let mut f = String::new();
             // TODO: check with relative columns
             f.push('$');
-            push_column(read_u16(&rgce[5..7]) as u32, &mut f);
+            push_column(u32::from(read_u16(&rgce[5..7])), &mut f);
             f.push('$');
-            f.push_str(&format!("{}", read_u16(&rgce[3..5]) as u32 + 1));
+            f.push_str(&format!("{}", u32::from(read_u16(&rgce[3..5])) + 1));
             (Some(ixti), f)
         }
         0x3b | 0x5b | 0x7b => {
@@ -778,14 +778,14 @@ fn parse_defined_names(rgce: &[u8]) -> Result<(Option<usize>, String), XlsError>
             let mut f = String::new();
             // TODO: check with relative columns
             f.push('$');
-            push_column(read_u16(&rgce[7..9]) as u32, &mut f);
+            push_column(u32::from(read_u16(&rgce[7..9])), &mut f);
             f.push('$');
-            f.push_str(&format!("{}", read_u16(&rgce[3..5]) as u32 + 1));
+            f.push_str(&format!("{}", u32::from(read_u16(&rgce[3..5])) + 1));
             f.push(':');
             f.push('$');
-            push_column(read_u16(&rgce[9..11]) as u32, &mut f);
+            push_column(u32::from(read_u16(&rgce[9..11])), &mut f);
             f.push('$');
-            f.push_str(&format!("{}", read_u16(&rgce[5..7]) as u32 + 1));
+            f.push_str(&format!("{}", u32::from(read_u16(&rgce[5..7])) + 1));
             (Some(ixti), f)
         }
         0x3c | 0x5c | 0x7c | 0x3d | 0x5d | 0x7d => {
@@ -823,9 +823,9 @@ fn parse_formula(
                 formula.push('!');
                 // TODO: check with relative columns
                 formula.push('$');
-                push_column(read_u16(&rgce[4..6]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[4..6])), &mut formula);
                 formula.push('$');
-                formula.push_str(&format!("{}", read_u16(&rgce[2..4]) as u32 + 1));
+                formula.push_str(&format!("{}", u32::from(read_u16(&rgce[2..4])) + 1));
                 rgce = &rgce[6..];
             }
             0x3b | 0x5b | 0x7b => {
@@ -836,14 +836,14 @@ fn parse_formula(
                 formula.push('!');
                 // TODO: check with relative columns
                 formula.push('$');
-                push_column(read_u16(&rgce[6..8]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[6..8])), &mut formula);
                 formula.push('$');
-                formula.push_str(&format!("{}", read_u16(&rgce[2..4]) as u32 + 1));
+                formula.push_str(&format!("{}", u32::from(read_u16(&rgce[2..4])) + 1));
                 formula.push(':');
                 formula.push('$');
-                push_column(read_u16(&rgce[8..10]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[8..10])), &mut formula);
                 formula.push('$');
-                formula.push_str(&format!("{}", read_u16(&rgce[4..6]) as u32 + 1));
+                formula.push_str(&format!("{}", u32::from(read_u16(&rgce[4..6])) + 1));
                 rgce = &rgce[10..];
             }
             0x3c | 0x5c | 0x7c => {
@@ -1047,7 +1047,7 @@ fn parse_formula(
                 if rgce[3] & 0x80 != 0x80 {
                     formula.push('$');
                 }
-                push_column(col as u32, &mut formula);
+                push_column(u32::from(col), &mut formula);
                 if rgce[3] & 0x40 != 0x40 {
                     formula.push('$');
                 }
@@ -1057,14 +1057,14 @@ fn parse_formula(
             0x25 | 0x45 | 0x65 => {
                 stack.push(formula.len());
                 formula.push('$');
-                push_column(read_u16(&rgce[4..6]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[4..6])), &mut formula);
                 formula.push('$');
-                formula.push_str(&format!("{}", read_u16(&rgce[0..2]) as u32 + 1));
+                formula.push_str(&format!("{}", u32::from(read_u16(&rgce[0..2])) + 1));
                 formula.push(':');
                 formula.push('$');
-                push_column(read_u16(&rgce[6..8]) as u32, &mut formula);
+                push_column(u32::from(read_u16(&rgce[6..8])), &mut formula);
                 formula.push('$');
-                formula.push_str(&format!("{}", read_u16(&rgce[2..4]) as u32 + 1));
+                formula.push_str(&format!("{}", u32::from(read_u16(&rgce[2..4])) + 1));
                 rgce = &rgce[8..];
             }
             0x2A | 0x4A | 0x6A => {
