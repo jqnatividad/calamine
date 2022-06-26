@@ -5,6 +5,12 @@ use serde::{self, Deserialize};
 
 use super::CellErrorType;
 
+#[cfg(feature = "dates")]
+use once_cell::sync::OnceCell;
+
+#[cfg(feature = "dates")]
+static EXCEL_EPOCH: OnceCell<chrono::NaiveDateTime> = OnceCell::new();
+
 /// An enum to represent all different data types that can appear as
 /// a value in a worksheet cell
 #[derive(Debug, Clone, PartialEq)]
@@ -124,11 +130,15 @@ impl DataType {
                 chrono::NaiveDateTime::from_timestamp_opt(secs, 0)
             }
             DataType::Float(f) | DataType::DateTime(f) => {
-                let unix_days = f - 25569.;
-                let unix_secs = unix_days * 86400.;
-                let secs = unix_secs.trunc() as i64;
-                let nsecs = (unix_secs.fract().abs() * 1e9) as u32;
-                chrono::NaiveDateTime::from_timestamp_opt(secs, nsecs)
+                // let excel_epoch = chrono::NaiveDate::from_ymd(1899, 12, 30).and_hms(0, 0, 0);
+                let excel_epoch = EXCEL_EPOCH
+                    .get_or_init(|| chrono::NaiveDate::from_ymd(1899, 12, 30).and_hms(0, 0, 0));
+                let h = f * 24f64;
+                let m = h * 60f64;
+                let s = m * 60f64;
+                let ms = s * 1e+3f64;
+                let excel_duration = chrono::Duration::milliseconds(ms as i64);
+                Some(*excel_epoch + excel_duration)
             }
             _ => None,
         }
@@ -313,7 +323,7 @@ mod tests {
             ))
         );
 
-        let unix_epoch_15h30m = DataType::Float(25569.645833333333333);
+        let unix_epoch_15h30m = DataType::Float(25_569.645_833_333_332);
         let chrono_dt = NaiveDateTime::new(
             NaiveDate::from_ymd(1970, 1, 1),
             NaiveTime::from_hms(15, 30, 0),
@@ -324,7 +334,7 @@ mod tests {
 
     #[test]
     fn test_int_dates() {
-        use chrono::{Duration, NaiveDate, NaiveDateTime, NaiveTime};
+        use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
         let unix_epoch = DataType::Int(25569);
         assert_eq!(
