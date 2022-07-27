@@ -21,7 +21,7 @@ once_cell = { version = "1.12", features = ["parking_lot"], optional = true }
 serde = "1"
 quick-xml = { version = "0.22", features = ["encoding"] }
 zip = { version = "0.6", default-features = false, features = ["deflate"] }
-chrono = { version = "0.4", features = ["serde"], optional = true }
+chrono = { version = "0.4.20-rc.1", features = ["serde"], optional = true }
 
 [dev-dependencies]
 glob = "0.3"
