@@ -397,7 +397,6 @@ where
             visitor.visit_map(self)
         } else {
             visitor.visit_seq(self)
-
         }
     }
 

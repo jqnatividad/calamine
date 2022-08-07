@@ -442,7 +442,10 @@ fn parse_rk(r: &[u8]) -> Result<Cell<DataType>, XlsError> {
     }
     let row = read_u16(r);
     let col = read_u16(&r[2..]);
-    Ok(Cell::new((u32::from(row), u32::from(col)), rk_num(&r[6..10])))
+    Ok(Cell::new(
+        (u32::from(row), u32::from(col)),
+        rk_num(&r[6..10]),
+    ))
 }
 
 fn parse_mul_rk(r: &[u8], cells: &mut Vec<Cell<DataType>>) -> Result<(), XlsError> {
