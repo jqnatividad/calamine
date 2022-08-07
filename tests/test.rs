@@ -1,3 +1,4 @@
+#![allow(clippy::unnecessary_to_owned)]
 use calamine::CellErrorType::*;
 use calamine::DataType::{Bool, DateTime, Empty, Error, Float, String};
 use calamine::{open_workbook, open_workbook_auto, Ods, Reader, Xls, Xlsb, Xlsx};

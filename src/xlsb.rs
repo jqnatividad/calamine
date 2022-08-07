@@ -1,3 +1,4 @@
+#![allow(clippy::format_push_string)]
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io::{BufReader, Read, Seek};

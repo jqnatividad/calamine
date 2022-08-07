@@ -155,6 +155,7 @@ where
     /// Sheets paths
     sheets: Vec<(String, String)>,
     /// Tables: Name, Sheet, Columns, Data dimensions
+    #[allow(clippy::type_complexity)]
     tables: Option<Vec<(String, String, Vec<String>, Dimensions)>>,
     /// Cell (number) formats
     formats: Vec<CellFormat>,
@@ -407,7 +408,7 @@ impl<RS: Read + Seek> Xlsx<RS> {
                                 Attribute {
                                     key: b"Type",
                                     value: v,
-                                } => table_type = *v == b"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table"[..],
+                                } => table_type = *v == b"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table"[..],  //DevSkim: ignore DS137138 
                                 _ => (),
                             }
                             }
