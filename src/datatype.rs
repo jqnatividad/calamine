@@ -24,7 +24,7 @@ pub enum DataType {
     /// Boolean
     Bool(bool),
     /// Date or Time
-    DateTime(f64),
+    DateTime(DateFormat, f64),
     /// Error
     Error(CellErrorType),
     /// Empty cell
@@ -129,16 +129,12 @@ impl DataType {
                 let secs = days * 86400;
                 chrono::NaiveDateTime::from_timestamp_opt(secs, 0)
             }
-            DataType::Float(f) | DataType::DateTime(f) => {
-                // let excel_epoch = chrono::NaiveDate::from_ymd(1899, 12, 30).and_hms(0, 0, 0);
-                let excel_epoch = EXCEL_EPOCH
-                    .get_or_init(|| chrono::NaiveDate::from_ymd(1899, 12, 30).and_hms(0, 0, 0));
-                let h = f * 24f64;
-                let m = h * 60f64;
-                let s = m * 60f64;
-                let ms = s * 1e+3f64;
-                let excel_duration = chrono::Duration::milliseconds(ms as i64);
-                Some(*excel_epoch + excel_duration)
+            DataType::Float(f) | DataType::DateTime(_, f) => {
+                let unix_days = f - 25569.;
+                let unix_secs = unix_days * 86400.;
+                let secs = unix_secs.trunc() as i64;
+                let nsecs = (unix_secs.fract().abs() * 1e9) as u32;
+                chrono::NaiveDateTime::from_timestamp_opt(secs, nsecs)
             }
             _ => None,
         }
@@ -188,7 +184,7 @@ impl fmt::Display for DataType {
             DataType::Float(ref e) => write!(f, "{}", e),
             DataType::String(ref e) => write!(f, "{}", e),
             DataType::Bool(ref e) => write!(f, "{}", e),
-            DataType::DateTime(ref e) => write!(f, "{}", e),
+            DataType::DateTime(_, ref e) => write!(f, "{}", e),
             DataType::Error(ref e) => write!(f, "{}", e),
             DataType::Empty => Ok(()),
         }
@@ -353,5 +349,67 @@ mod tests {
                 NaiveTime::from_hms(0, 0, 0),
             ))
         );
+    }
+}
+
+/// How Excel displays the date
+#[derive(Debug, Clone, PartialEq)]
+pub enum DateFormat {
+    /// mm-dd-yy
+    mm_dd_yy,
+    /// d-mmm-yy
+    d_mmm_yy,
+    /// d-mmm
+    d_mmm,
+    /// mmm-yy
+    mmm_yy,
+    /// h:mm AM/PM
+    h_mm_AM_PM,
+    /// h:mm:ss AM/PM
+    h_mm_ss_AM_PM,
+    /// h:mm
+    h_mm,
+    /// h:mm:ss
+    h_mm_ss,
+    /// m/d/yy h:mm
+    m_d_yy_h_mm,
+    /// mm:ss
+    mm_ss,
+    /// [h]:mm:ss
+    H_mm_ss,
+    /// mmss.0
+    mmss_0,
+    /// Unknown date format
+    Unknown
+
+}
+
+impl DateFormat {
+    #[cfg(feature = "dates")]
+    fn to_strf_format_string(&self) -> &'static str {
+        match self {
+            DateFormat::mm_dd_yy => "%m-%d-%y",
+            DateFormat::d_mmm_yy => "%d-%b-%y",
+            DateFormat::d_mmm => "%d-%b",
+            DateFormat::mmm_yy => "%b-%y" ,
+            DateFormat::h_mm_AM_PM => "%I:%M %p" ,
+            DateFormat::h_mm_ss_AM_PM => "%I:%M:%S %p" ,
+            DateFormat::h_mm => "%I:%M" ,
+            DateFormat::h_mm_ss  |
+            // TODO: [h] (more than 24 hours) is not implemented for strftime
+            DateFormat::H_mm_ss => "%I:%M:%S" ,
+            DateFormat::m_d_yy_h_mm => "%m/%d/%y %I:%M" ,
+            DateFormat::mm_ss | DateFormat::mmss_0 => "%M:%S" ,
+            // DateFormat::mmss_0 => "" ,
+            DateFormat::Unknown => "" ,
+        }
+    }
+
+    /// Converts the datetime to string according to the format
+    #[cfg(feature = "dates")]
+    pub fn parse_date_to_string(&self, data: f64) -> String {
+        let dt = DataType::Float(data).as_datetime().unwrap();
+        let format_string = self.to_strf_format_string();
+        format!("{}", dt.format(format_string))
     }
 }
