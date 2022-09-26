@@ -130,11 +130,14 @@ impl DataType {
                 chrono::NaiveDateTime::from_timestamp_opt(secs, 0)
             }
             DataType::Float(f) | DataType::DateTime(_, f) => {
-                let unix_days = f - 25569.;
-                let unix_secs = unix_days * 86400.;
-                let secs = unix_secs.trunc() as i64;
-                let nsecs = (unix_secs.fract().abs() * 1e9) as u32;
-                chrono::NaiveDateTime::from_timestamp_opt(secs, nsecs)
+                let excel_epoch = EXCEL_EPOCH
+                    .get_or_init(|| chrono::NaiveDate::from_ymd(1899, 12, 30).and_hms(0, 0, 0));
+                let h = f * 24f64;
+                let m = h * 60f64;
+                let s = m * 60f64;
+                let ms = s * 1e+3f64;
+                let excel_duration = chrono::Duration::milliseconds(ms as i64);
+                Some(*excel_epoch + excel_duration)
             }
             _ => None,
         }
@@ -380,8 +383,7 @@ pub enum DateFormat {
     /// mmss.0
     mmss_0,
     /// Unknown date format
-    Unknown
-
+    Unknown,
 }
 
 impl DateFormat {
