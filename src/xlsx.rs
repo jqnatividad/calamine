@@ -11,9 +11,9 @@ use quick_xml::Reader as XmlReader;
 use zip::read::{ZipArchive, ZipFile};
 use zip::result::ZipError;
 
+use crate::datatype::DateFormat;
 use crate::vba::VbaProject;
 use crate::{Cell, CellErrorType, DataType, Metadata, Range, Reader, Table};
-use crate::datatype::DateFormat;
 
 type XlsReader<'a> = XmlReader<BufReader<ZipFile<'a>>>;
 
@@ -241,8 +241,11 @@ impl<RS: Read + Seek> Xlsx<RS> {
                                             Some(fmt) if is_custom_date_format(fmt) => {
                                                 CellFormat::Date(DateFormat::Unknown)
                                             }
-                                            None if is_builtin_date_format_id(&a.value).is_some() => {
-                                                let date_format = is_builtin_date_format_id(&a.value).unwrap();
+                                            None if is_builtin_date_format_id(&a.value)
+                                                .is_some() =>
+                                            {
+                                                let date_format =
+                                                    is_builtin_date_format_id(&a.value).unwrap();
                                                 CellFormat::Date(date_format)
                                             }
                                             _ => CellFormat::Other,
@@ -895,11 +898,9 @@ fn read_sheet_data(
                     Ok(DataType::Empty)
                 } else {
                     v.parse()
-                        .map(|n| {
-                            match date_format {
-                                Some(x) => DataType::DateTime(x, n),
-                                None => DataType::Float(n)
-                            }
+                        .map(|n| match date_format {
+                            Some(x) => DataType::DateTime(x, n),
+                            None => DataType::Float(n),
                         })
                         .map_err(XlsxError::ParseFloat)
                 }
@@ -908,11 +909,9 @@ fn read_sheet_data(
                 // If type is not known, we try to parse as Float for utility, but fall back to
                 // String if this fails.
                 v.parse()
-                    .map(|n| {
-                        match date_format {
-                            Some(x) => DataType::DateTime(x, n),
-                            None => DataType::Float(n)
-                        }
+                    .map(|n| match date_format {
+                        Some(x) => DataType::DateTime(x, n),
+                        None => DataType::Float(n),
                     })
                     .or(Ok(DataType::String(v)))
             }
@@ -961,31 +960,31 @@ fn is_custom_date_format(format: &str) -> bool {
 
 fn is_builtin_date_format_id(id: &[u8]) -> Option<DateFormat> {
     match id {
-    // mm-dd-yy
-    b"14" => Some(DateFormat::mm_dd_yy),
-    // d-mmm-yy
-    b"15" => Some(DateFormat::d_mmm_yy ),
-    // d-mmm
-    b"16" => Some(DateFormat::d_mmm ),
-    // mmm-yy
-    b"17" => Some(DateFormat::mmm_yy ),
-    // h:mm AM/PM
-    b"18" => Some(DateFormat::h_mm_AM_PM ),
-    // h:mm:ss AM/PM
-    b"19" => Some(DateFormat::h_mm_ss_AM_PM ),
-    // h:mm
-    b"20" => Some(DateFormat::h_mm ),
-    // h:mm:ss
-    b"21" => Some(DateFormat::h_mm_ss ),
-    // m/d/yy h:mm
-    b"22" => Some(DateFormat::m_d_yy_h_mm ),
-    // mm:ss
-    b"45" => Some(DateFormat::mm_ss ),
-    // [h]:mm:ss
-    b"46" => Some(DateFormat::H_mm_ss ),
-    // mmss.0
-    b"47" => Some(DateFormat::mmss_0),
-    _ => None
+        // mm-dd-yy
+        b"14" => Some(DateFormat::mm_dd_yy),
+        // d-mmm-yy
+        b"15" => Some(DateFormat::d_mmm_yy),
+        // d-mmm
+        b"16" => Some(DateFormat::d_mmm),
+        // mmm-yy
+        b"17" => Some(DateFormat::mmm_yy),
+        // h:mm AM/PM
+        b"18" => Some(DateFormat::h_mm_AM_PM),
+        // h:mm:ss AM/PM
+        b"19" => Some(DateFormat::h_mm_ss_AM_PM),
+        // h:mm
+        b"20" => Some(DateFormat::h_mm),
+        // h:mm:ss
+        b"21" => Some(DateFormat::h_mm_ss),
+        // m/d/yy h:mm
+        b"22" => Some(DateFormat::m_d_yy_h_mm),
+        // mm:ss
+        b"45" => Some(DateFormat::mm_ss),
+        // [h]:mm:ss
+        b"46" => Some(DateFormat::H_mm_ss),
+        // mmss.0
+        b"47" => Some(DateFormat::mmss_0),
+        _ => None,
     }
 }
 

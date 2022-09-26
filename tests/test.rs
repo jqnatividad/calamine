@@ -744,7 +744,10 @@ fn date() {
     let mut xls: Xlsx<_> = open_workbook(&path).unwrap();
     let range = xls.worksheet_range_at(0).unwrap().unwrap();
 
-    assert_eq!(range.get_value((0, 0)), Some(&DateTime(DateFormat::Unknown, 44197.0)));
+    assert_eq!(
+        range.get_value((0, 0)),
+        Some(&DateTime(DateFormat::Unknown, 44197.0))
+    );
 
     #[cfg(feature = "dates")]
     {
