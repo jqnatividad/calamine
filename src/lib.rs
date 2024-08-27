@@ -143,15 +143,15 @@ pub struct Dimensions {
 #[allow(clippy::len_without_is_empty)]
 impl Dimensions {
     /// create dimensions info with start position and end position
-    pub fn new(start: (u32, u32), end: (u32, u32)) -> Self {
+    pub const fn new(start: (u32, u32), end: (u32, u32)) -> Self {
         Self { start, end }
     }
     /// check if a position is in it
-    pub fn contains(&self, row: u32, col: u32) -> bool {
+    pub const fn contains(&self, row: u32, col: u32) -> bool {
         row >= self.start.0 && row <= self.end.0 && col >= self.start.1 && col <= self.end.1
     }
     /// len
-    pub fn len(&self) -> u64 {
+    pub const fn len(&self) -> u64 {
         (self.end.0 - self.start.0 + 1) as u64 * (self.end.1 - self.start.1 + 1) as u64
     }
 }
@@ -344,7 +344,7 @@ pub struct Cell<T: CellType> {
 
 impl<T: CellType> Cell<T> {
     /// Creates a new `Cell`
-    pub fn new(position: (u32, u32), value: T) -> Cell<T> {
+    pub const fn new(position: (u32, u32), value: T) -> Cell<T> {
         Cell {
             pos: position,
             val: value,
@@ -352,12 +352,12 @@ impl<T: CellType> Cell<T> {
     }
 
     /// Gets `Cell` position
-    pub fn get_position(&self) -> (u32, u32) {
+    pub const fn get_position(&self) -> (u32, u32) {
         self.pos
     }
 
     /// Gets `Cell` value
-    pub fn get_value(&self) -> &T {
+    pub const fn get_value(&self) -> &T {
         &self.val
     }
 }
@@ -390,7 +390,7 @@ impl<T: CellType> Range<T> {
 
     /// Creates a new empty range
     #[inline]
-    pub fn empty() -> Range<T> {
+    pub const fn empty() -> Range<T> {
         Range {
             start: (0, 0),
             end: (0, 0),
@@ -468,7 +468,7 @@ impl<T: CellType> Range<T> {
             // search bounds
             let row_start = cells.first().unwrap().pos.0;
             let row_end = cells.last().unwrap().pos.0;
-            let mut col_start = std::u32::MAX;
+            let mut col_start = u32::MAX;
             let mut col_end = 0;
             for c in cells.iter().map(|c| c.pos.1) {
                 if c < col_start {
@@ -952,7 +952,7 @@ impl<T> Table<T> {
         &self.columns
     }
     /// Get a range representing the data from the table (excludes column headers)
-    pub fn data(&self) -> &Range<T> {
+    pub const fn data(&self) -> &Range<T> {
         &self.data
     }
 }
