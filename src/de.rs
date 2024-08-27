@@ -167,7 +167,7 @@ impl<'h, H: AsRef<str> + Clone + 'h> RangeDeserializerBuilder<'h, H> {
     ///     }
     /// }
     /// ```
-    pub fn with_headers(headers: &'h [H]) -> Self {
+    pub const fn with_headers(headers: &'h [H]) -> Self {
         RangeDeserializerBuilder {
             headers: Headers::Custom(headers),
         }
@@ -448,7 +448,7 @@ where
         }
     }
 
-    fn has_headers(&self) -> bool {
+    const fn has_headers(&self) -> bool {
         self.headers.is_some()
     }
 }

@@ -697,7 +697,7 @@ pub struct ExcelDateTime {
 
 impl ExcelDateTime {
     /// Creates a new `ExcelDateTime`
-    pub fn new(value: f64, datetime_type: ExcelDateTimeType, is_1904: bool) -> Self {
+    pub const fn new(value: f64, datetime_type: ExcelDateTimeType, is_1904: bool) -> Self {
         ExcelDateTime {
             value,
             datetime_type,
@@ -716,18 +716,18 @@ impl ExcelDateTime {
 
     /// True if excel datetime has duration format ([hh]:mm:ss, for example)
     #[cfg(feature = "dates")]
-    pub fn is_duration(&self) -> bool {
+    pub const fn is_duration(&self) -> bool {
         matches!(self.datetime_type, ExcelDateTimeType::TimeDelta)
     }
 
     /// True if excel datetime has datetime format (not duration)
     #[cfg(feature = "dates")]
-    pub fn is_datetime(&self) -> bool {
+    pub const fn is_datetime(&self) -> bool {
         matches!(self.datetime_type, ExcelDateTimeType::DateTime)
     }
 
     /// Converting data type into a float
-    pub fn as_f64(&self) -> f64 {
+    pub const fn as_f64(&self) -> f64 {
         self.value
     }
 

@@ -623,7 +623,7 @@ fn parse_bool_err(r: &[u8]) -> Result<Cell<Data>, XlsError> {
     }
 }
 
-fn parse_err(e: u8) -> Result<Data, XlsError> {
+const fn parse_err(e: u8) -> Result<Data, XlsError> {
     match e {
         0x00 => Ok(Data::Error(CellErrorType::Null)),
         0x07 => Ok(Data::Error(CellErrorType::Div0)),

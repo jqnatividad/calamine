@@ -819,7 +819,7 @@ struct InnerTableMetadata {
 }
 
 impl InnerTableMetadata {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             display_name: String::new(),
             ref_cells: String::new(),

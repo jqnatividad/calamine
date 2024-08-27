@@ -245,7 +245,7 @@ struct Sectors {
 }
 
 impl Sectors {
-    fn new(size: usize, data: Vec<u8>) -> Sectors {
+    const fn new(size: usize, data: Vec<u8>) -> Sectors {
         Sectors { data, size }
     }
 

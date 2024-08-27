@@ -44,7 +44,7 @@ pub fn detect_custom_number_format(format: &str) -> CellFormat {
     CellFormat::Other
 }
 
-pub fn builtin_format_by_id(id: &[u8]) -> CellFormat {
+pub const fn builtin_format_by_id(id: &[u8]) -> CellFormat {
     match id {
         // mm-dd-yy
         b"14" |
@@ -77,7 +77,7 @@ pub fn builtin_format_by_id(id: &[u8]) -> CellFormat {
 /// Check if code corresponds to builtin date format
 ///
 /// See `is_builtin_date_format_id`
-pub fn builtin_format_by_code(code: u16) -> CellFormat {
+pub const fn builtin_format_by_code(code: u16) -> CellFormat {
     match code {
         14..=22 | 45 | 47 => CellFormat::DateTime,
         46 => CellFormat::TimeDelta,
@@ -86,7 +86,7 @@ pub fn builtin_format_by_code(code: u16) -> CellFormat {
 }
 
 // convert i64 to date, if format == Date
-pub fn format_excel_i64(value: i64, format: Option<&CellFormat>, is_1904: bool) -> Data {
+pub const fn format_excel_i64(value: i64, format: Option<&CellFormat>, is_1904: bool) -> Data {
     match format {
         Some(CellFormat::DateTime) => Data::DateTime(ExcelDateTime::new(
             value as f64,
@@ -104,7 +104,7 @@ pub fn format_excel_i64(value: i64, format: Option<&CellFormat>, is_1904: bool) 
 
 // convert f64 to date, if format == Date
 #[inline]
-pub fn format_excel_f64_ref(
+pub const fn format_excel_f64_ref(
     value: f64,
     format: Option<&CellFormat>,
     is_1904: bool,

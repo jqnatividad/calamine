@@ -88,7 +88,7 @@ impl<'a> XlsxCellReader<'a> {
         })
     }
 
-    pub fn dimensions(&self) -> Dimensions {
+    pub const fn dimensions(&self) -> Dimensions {
         self.dimensions
     }
 
