@@ -517,7 +517,7 @@ enum Biff {
 }
 
 /// BOF [MS-XLS] 2.4.21
-fn parse_bof(r: &mut Record<'_>) -> Result<Bof, XlsError> {
+fn parse_bof(r: &Record<'_>) -> Result<Bof, XlsError> {
     let mut dt = 0;
     let biff_version = read_u16(&r.data[..2]);
 
