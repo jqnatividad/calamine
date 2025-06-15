@@ -7,6 +7,8 @@ An Excel/OpenDocument Spreadsheets file reader/deserializer, in pure Rust.
 
 [Documentation](https://docs.rs/calamine/)
 
+> NOTE: qsv-calamine will be retired as soon as a new calamine is released after [this PR](https://github.com/tafia/calamine/pull/506) is merged. The yanked zip dependency is preventing crates that depend on calamine v0.27.0 from being published to crates.io.
+
 ## Description
 
 **calamine** is a pure Rust library to read and deserialize any spreadsheet file:
