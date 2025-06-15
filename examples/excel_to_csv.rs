@@ -1,3 +1,4 @@
+use qsv_calamine as calamine;
 use calamine::{open_workbook_auto, Data, Range, Reader};
 use std::env;
 use std::fs::File;

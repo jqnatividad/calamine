@@ -2,6 +2,7 @@
 
 extern crate test;
 
+use qsv_calamine as calamine;
 use calamine::{open_workbook, Ods, Reader, Xls, Xlsb, Xlsx};
 use std::fs::File;
 use std::io::BufReader;

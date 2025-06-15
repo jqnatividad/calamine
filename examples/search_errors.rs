@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
+use qsv_calamine as calamine;
 use calamine::{open_workbook_auto, Data, Error, Reader};
 use glob::{glob, GlobError, GlobResult};
 
